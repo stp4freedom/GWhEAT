@@ -80,8 +80,8 @@ library(devtools)
 Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
 ```{r,warning=FALSE}
 #install package
-#install_github("stp4freedom/HW4_GLM_GWAS", force =TRUE)
-library(GWAStest)#package name
+#install_github("stp4freedom/GWhEAT", force =TRUE)
+library(GWhEAT)#package name
 #Load dependencies 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(ggplot2,knitr,gridExtra,kableExtra)
