@@ -1,0 +1,193 @@
+---
+title: "GWAS_apply"
+output: html_document
+---
+
+```{r}
+if (!file.exists("GAPIT_Tutorial_Data.zip"))
+{
+  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
+  unzip("GAPIT_Tutorial_Data.zip")
+}
+download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
+download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
+# Import the GAPIT demo data genotypes
+gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes <- sapply(gt_scan, class)
+genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+
+GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
+CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
+phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
+
+
+#Load dependencies
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(ggplot2,knitr,gridExtra,kableExtra,data.table)
+
+
+#source("R/Function_qqplot.R")
+#source("R/Function_manhattan_QTN.R")
+#source("R/Function_manhattan.R")
+#source("R/FUNCTION_powerFDRtype1error.R")
+```
+
+# Question 3
+
+## Demo with QTN
+```{r, fig.show='hide'}
+#Create QTNs
+n=nrow(genotypes)
+m=ncol(genotypes)
+NQTN=10
+#Show the positions of the QTN
+QTN.position=sample(m,NQTN,replace=F)
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position,plots=TRUE,messages=TRUE)
+hist(test$power.fdr.type1error.res$power)
+```
+
+
+## Demo without QTN
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=TRUE,messages=TRUE)
+```
+
+## Demo no plot
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=FALSE,messages=TRUE)
+```
+
+## Demo no plot nor CV
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(phenotypes_n_1,genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
+```
+
+## Demo no plot nor CV
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(phenotypes_n_1,genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
+```
+
+## Demo with all parameters, plots and messages and returns a csv, specified trait name
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,mySim$QTN.position,plot=TRUE,messages=TRUE,print=TRUE,trait="height")
+test$power.fdr.type1error.res
+```
+
+## Demo with all parameters, plots and messages and returns a csv, with a specified cutoff
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+test=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,mySim$QTN.position,plot=TRUE,messages=TRUE,print=FALSE,cutoff = NULL)
+test$power.fdr.type1error.res$FP.fdr.power
+test$power.fdr.type1error.res$TP.fdr.power
+hist(test$power.fdr.type1error.res$power)
+```
+
+# Question 4
+
+## Simulated Data
+```{r}
+source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
+source("http://www.zzlab.net/StaGen/2020/R/GWASbyCor.R")
+NQTN = 10 #specify number of QTN
+h2 = 0.75 #heritability
+alpha = 0.6 #alpha value
+distribution = "normal" #specify distribution
+set.seed(1337)
+gcrep=replicate (30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= as.vector(GWASbyCor(X=genotypes,y=phenotypes_n_1))#GWAS by using the correlation methods
+  pres=power.fdr(p, QTN.position=QTN.position,cutoff=NULL)
+  manhattan_plot(GM,p,cutoff=NULL,QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "unknown",messages=TRUE)
+  qq_plot(GM,p,QTN.position, trait = "unknown")
+  })
+means=mean(gcrep)
+stdevs=sd(gcrep)
+out4 <- rbind(means,stdevs)
+out4 <- as.data.frame(out4)
+colnames(out4) <- c("QTNs in the Top 10")
+rownames(out4)<-c("Averages","Standard Deviations")
+kable(out4) 
+```
+
+```{r}
+NQTN = 10 #specify number of QTN
+h2 = 0.75 #heritability
+alpha = 0.6 #alpha value
+distribution = "normal" #specify distribution
+set.seed(1337)
+n=nrow(genotypes)
+m=ncol(genotypes)
+NQTN=10
+#Show the positions of the QTN
+QTN.position=sample(m,NQTN,replace=F)
+
+garep=replicate(30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+  function(y=NULL, X=NULL, C=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE)
+  test_rep=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position=QTN.position, plot=TRUE)
+  N_detected=length(test_rep$True.Positive)
+  N_output=c()
+  N_output=c(N_detected)
+  })
+means=mean(garep)
+stdevs=sd(garep)
+out5 <- rbind(means,stdevs)
+out5 <- as.data.frame(out5)
+colnames(out5) <- c("True Positives")
+rownames(out5)<-c("Averages","Standard Deviations")
+kable(out5) 
+
+T10r=index[1:10]
+  detected=intersect(T10r,mySim$QTN.position)#find the position of top10 detected QTN
+  N_detected= length(detected) # the number of QTNs among top ten associated SNPs
+  N_output=c()
+  N_output=c(N_detected)#combine the output into matrix
+mean(test_rep$power.fdr.type1error.res$power)  
+mean(test_rep$power.fdr.type1error.res$fdr) 
+mean(test_rep$power.fdr.type1error.res$type1error) 
+str(test_rep$P.value.res)
+test_c=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position=QTN.position, plot=FALSE,cutoff = 0.05)
+test_c$True.Positive
+test_c$False.Positive
+test_rep$False.Positive
+pdr=power.fdr(test_rep$order.SNP.res,QTN.position)
+tes=fdr(test$P.value.res)
+tes
+mean(test$power.fdr.type1error.res$fdr)
+fal.neg(test_rep$P.value.res,QTN.position,test_rep$cutoff.final.res)
+```
+
+# This code can be used for The bonus question
+
+## Time Difference between GWAS with apply vs loop
+```{r}
+#Time BLINK
+loop_start <- proc.time()
+test=GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+loop_end <- proc.time()
+loop_elapsed <- loop_end[3] - loop_start[3]
+
+#Time our function
+apply_start <- proc.time()
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position,plot=FALSE,messages=FALSE,print=FALSE,trait="height")
+apply_end <- proc.time()
+apply_elapsed <- apply_end[3] - apply_start[3]
+apply_elapsed
+# Consolidate times into a neat table
+time_table <- data.frame(c("loop", "apply"), c(loop_elapsed, apply_elapsed))
+names(time_table) <- c("Method", "Time(s)")
+kable(time_table) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
+
+# Calculate the percent improvement
+perc_diff <- round((loop_elapsed - apply_elapsed) / loop_elapsed * 100,2)
+
+print(paste("Apply is ", perc_diff , "% faster!"))
+```

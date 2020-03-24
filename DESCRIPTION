@@ -1,11 +1,17 @@
 Package: GWhEAT
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Performed GWAS in a fast and efficient manor
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Lance Merrick, Samuel Prather
+Maintainer: Samuel Prather <stp4freedom@gmail.com>
+Description: This package can run GWAS with PCA and user imputed covariates.
+    It’s design is to reduce false positives and increases the power of a GWAS by taking into account population structure.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Imports:
+ ggplot2,
+ knitr,
+ gridExtra,
+ data.table
+RoxygenNote: 7.0.2
