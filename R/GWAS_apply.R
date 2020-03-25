@@ -22,8 +22,6 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
     y=pheno
     PCA=prcomp(GD)
     P=apply(GD,2, function(x)
-
-      #x=GD[,1]
       # CHECK FOR GENOTYPE DISTRIBUTION
       if(max(x)==min(x)){p=1
       P=p[length(p)]
@@ -66,10 +64,8 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
       0.05/m,
       cutoff
     ))
-    #if(messages==TRUE){print(paste0("The final cuttoff for a significant p-value is ",as.character(cutoff.final)))}
     sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
     lsnp=length(sig.SNP)
-    #if(messages==TRUE){print(paste0(as.character(lsnp), " Significant SNPs were found"))}
 
     ###
     zeros=P==0
@@ -126,8 +122,6 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
   if(messages==TRUE){print("Principal Components plots have been printed Successfully")}}
 
   P=apply(GD,2, function(x)
-
-    #x=GD[,1]
     # CHECK FOR GENOTYPE DISTRIBUTION
     if(max(x)==min(x)){p=1
     P=p[length(p)]
@@ -173,6 +167,13 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
   if(messages==TRUE){print(paste0("The final cuttoff for a significant p-value is ",as.character(cutoff.final)))}
   sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
   lsnp=length(sig.SNP)
+  minor_allele_freq <- apply(GD, 2, function(x) #Minor allele frequency calculation using Matt McGowan's code
+  {
+    allele_freq1 <- (sum(x == 0)*2 + sum(x == 1)) / (sum(!is.na(x)) * 2)
+    allele_freq2 <- (sum(x == 2)*2 + sum(x == 1)) / (sum(!is.na(x)) * 2)
+    return(min(allele_freq1, allele_freq2))
+  })
+  sig.MAF<-minor_allele_freq[sig.SNP]
   if(messages==TRUE){print(paste0(as.character(lsnp), " Significant SNPs were found"))}
 
   ###
@@ -207,16 +208,25 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
   if(plots==TRUE){qq=qq_plot(GM,P,trait=as.character(trait))
   knit_print(qq)
   if(messages==TRUE){print("QQ-Plot Printed")}}
-  P.value_df=data.frame(P.value)
-  if(print==TRUE){GLM.results = data.frame(GM,P.value_df,rank(P.value_df))
-  colnames(GLM.results)=c("SNP ","Chromosome ","Position ","P value","Order")
+  #Generate Results and Return
+  ##Create a table of P-values
+  P.value_df=data.frame(t(P.value))
+  #Create a table of results
+  SNP.MAF=data.frame(minor_allele_freq)
+  sig.table=data.frame(sig.SNP,P.value[sig.SNP],sig.MAF)
+  sig.table=data.frame(rownames(sig.table),sig.table)
+  rownames(sig.table) <- c()
+  colnames(sig.table)=c("SNP ID","SNP Position","P-value","MAF")
+  #Create out put for all markers and output to CSV
+  if(print==TRUE){GLM.results = data.frame(GM,P.value_df,rank(P.value_df),SNP.MAF)
+  colnames(GLM.results)=c("SNP ","Chromosome ","Position ","P value","Order","MAF")
   fwrite(GLM.results,file="GLM.results.csv",row.names=FALSE)}
   if(messages==TRUE){print("GWASapply results have printed")}
   #Returns Values that include false and true positives if QTN are provided
   if (!is.null(QTN.position)){
-    GWAS.Results=list(True.Positive=detected,False.Positive=falsePositive,P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP, power.fdr.type1error.res=power.fdr.type1error)
+    GWAS.Results=list(True.Positive=detected,False.Positive=falsePositive,P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], sig.SNP.MAF.res=sig.MAF,order.SNP.res=order.SNP, power.fdr.type1error.res=power.fdr.type1error,sig.table=sig.table)
   }else{
-    GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP)
+    GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP],sig.SNP.MAF.res=sig.MAF, order.SNP.res=order.SNP,sig.table=sig.table)
   }
   apply_end <- proc.time()
   apply_elapsed <- apply_end[3] - apply_start[3]
