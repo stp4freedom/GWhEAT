@@ -12,7 +12,7 @@ qq_plot <- function(GM, pvals, QTN_index= c(), trait = "unknown")
   exp_pval_dist <- -log10(runif(nrow(GM), 0, 1)) # Sample random p-values from a uniform distribution between 0 and 1
 
   qq_plot <- ggplot(GM, aes(x = sort(exp_pval_dist),
-                                    y = sort(GM$pvals))) +
+                                    y = sort(GM$pvals,na.last = FALSE))) +
     geom_point() +
     geom_abline(intercept = 0, slope = 1, color = "red") +
     labs(title = paste("Q-Q Plot for trait:", as.character(trait)),

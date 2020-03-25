@@ -12,7 +12,7 @@ power.fdr <- function(P.value, QTN.position=NULL,cutoff=NULL) {
   order.SNP=order(P.value)
   cutoff.final=(ifelse(
     is.null(cutoff),
-    0.05/m,
+    0.05/nsnp,
     cutoff
   ))
   sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
