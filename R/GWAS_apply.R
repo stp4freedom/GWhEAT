@@ -6,11 +6,12 @@
 #' @param GM genetic map of data with chr and position of each SNP
 #' @param PCA.M number of principal components to use default is 3
 #' @param QTN.position posistion of QTN if applicable
-#' @param cutoff  If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs
+#' @param cutoff  If cutoff is default, uses Bonferroni;0.05/number of SNPs
 #' @param plots  if TRUE, function plots PCA graphs, Manhatten Plot and QQ plot
 #' @param messages if TRUE, returns messages for the GWAS function
 #' @param print if TRUE, results are saved in a CSV
 #' @param trait character value for trait name
+#' @param rapid this option skips all side options and returns just GWAS results
 #' @return Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP and results in a CSV
 GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE,trait="unknown",rapid=FALSE){
   if(rapid==TRUE){
@@ -58,7 +59,7 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
     P=t(matrix(P))
     P.value=P
     order.SNP=order(P.value)
-    #If cutoff is default, uses Bonferroni; else uses -log(value)
+    #If cutoff is default, uses Bonferroni
     cutoff.final=(ifelse(
       is.null(cutoff),
       0.05/m,

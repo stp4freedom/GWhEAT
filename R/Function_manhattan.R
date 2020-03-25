@@ -2,11 +2,12 @@
 #'
 #' @param GM genetic map of data with chr and position of each SNP
 #' @param pvals pvals from gwas results for each SNP
-#' @param cutoff  If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs
+#' @param cutoff  If cutoff is default, uses Bonferroni; 0.05/number of SNPs
 #' @param QTN_index posistion of QTN if applicable
-#' @param FP Positions of SNPS that are False positive
-#' @param TP Positions of SNPS that are True positive
+#' @param FP Positions of SNPS that are False positives
+#' @param TP Positions of SNPS that are True positives
 #' @param trait character value for trait name
+#' @param messages if TRUE, returns messages for the GWAS function
 #' @return Manhatten plot
 manhattan_plot <- function(GM, pvals,cutoff=NULL,QTN_index = c(),FP=NULL,TP=NULL, trait = "unknown",messages=FALSE){
   m=nrow(GM)

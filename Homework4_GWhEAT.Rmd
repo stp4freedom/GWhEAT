@@ -1,0 +1,223 @@
+---
+title: "Homework 4, CROPS 545, Spring 2020"
+author: "Lance Merrick and Samuel Prather"
+date: "March 30, 2020"
+output: html_document
+---
+We will need to install the GWhEAT package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the packaged “devtools” using the code below.
+```{r,warning=FALSE,message=FALSE}
+#code to install package from github
+#install.packages("devtools")
+library(devtools)
+```
+
+Next the code below downloads and installs the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
+```{r,warning=FALSE,message=FALSE}
+#install package
+#install_github("stp4freedom/GWhEAT", force =TRUE)
+library(GWhEAT)#package name
+#Load dependencies 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(ggplot2,knitr,gridExtra)
+```
+
+The code below downloads and loads into the environment data that can be used for this tutorial. 
+```{r,warning=FALSE,message=FALSE}
+if (!file.exists("GAPIT_Tutorial_Data.zip"))
+{
+  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
+  unzip("GAPIT_Tutorial_Data.zip")
+}
+download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
+download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
+# Import the GAPIT demo data genotypes
+gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes <- sapply(gt_scan, class)
+genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+#import genetic map, phenotypes, and covariates
+GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
+CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
+phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
+#Create phenotypes with just n by 1
+phenotypes_n_1=phenotypes[,2]
+```
+
+### **Problem 1 (15 Pts)**
+The package should contain at least three input: y, X , and C that are R objects of numeric data frame. Their dimensions are n by 1, n by m, and n by t corresponding to phenotype, genotype and covariate data, where n is number of individuals, m is number of markers, and t is number of covariates. The function should return probability values with dimension of 1 by m for the association tests between phenotype and markers. Markers are tested one at a time with covariates in C included as covariates 
+
+#### Please see GWAS_apply.R for the source code to these questions
+Our gwas function is called "GWASapply" and the input is "pheno" for the y object, "geno" for the X object, and "Cov" for the C object. They follow the correct dimensions. The function returns various results, but the probability values are contained in the result "P.value.res" and returns an object of 1 by m.
+
+### **Problem 2 (25 Pts)**
+The package should perform PCA and incorporate PCs as cofactors for GWAS.  Your package should also automatically exclude the PCs that are in linear dependent to the covariates provided by users. 
+
+#### Please see GWAS_apply.R for the source code to these questions
+In our package we use the "prcomp" function to perform PCA on the X "geno" object and use a "fix_Dep" function to test for dependency and then excludethe PCs that are in linear dependence.
+
+### **Problem 3 (20 Pts)**
+Develop a user manual and tutorials. Name your package and create a logo.
+
+#### Please see User_Manual.Rmd and User_Manual.html forthe user manual and tutorials. 
+Also included is a Reference_Manual.pdf for all our functions in the package which include "fix_Dep", "manhattan_plot", "qq_plot", "power.fdr", and our main functions "GWASapply", and "GWASapply_rapid".
+
+### **Problem 4 (15 Pts)**
+Perform GWAS on the data provided or your own data which must contain cofactors.
+
+### Methods: 
+Our GWASapply function accepts the tutorial data phenotypes, genotypes, CV, and Genetic Map. It displays the PCA variance table and plots and scatterplots along with a QQ-plot and manhattan plot. The messages displayed give information on certain aspects of our GWAS results. The results returned returned are the probability values, cutoff used, order of snps and a table with the significant SNP information.
+
+### Results and Interpretation: 
+For the demo data, our function shows that since there was no cutoff specified, it defaults to a Bonferroni correction that results in a cutoff for significant values of "1.62e-05" with four significant SNPs. The results are shown below in the plots and the information is displayed in table 1. The MAF for each SNP is relative low ranging from 0.10 to 0.35.
+
+### Perform GWAS and display results
+```{r,warning=FALSE,message=FALSE}
+p4=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=TRUE,messages=TRUE,trait="Problem 4")
+```
+
+### GWAS Threshold
+```{r}
+p4$cutoff.final.res
+```
+
+### Significant SNPs and Minor Allele Frequency
+#### Table 1. Significant SNP Results.
+```{r,warning=FALSE,message=FALSE}
+kable(p4$sig.table)
+```
+
+
+
+
+### **Problem 5 (25 Pts)**
+Demonstrate that your method is superior to the competing method (GWASbyCor) through simulation.
+
+### Methods: 
+In order to accurately compare our GWAS function and "GWASbyCor", we will simulate data and use 10 QTNs in order to calculate false positives and true positives. We will use Manhattan plots and QQ plots to compare our results with the QTNs, false positives, and true positives denoted on the Manhattan plot. Using the replicate function, We replicated the GWAS functions, and then calculated how many false positives and true positives were calculated. We then took the averages and standard deviations of all the replicates. Then we use a t-test for both results in order to use statisitcal inferences and show a significant difference between the two methods. We also plotted ROC curves for Power vs FDR and Power vs Type 1 error.
+
+### Results and Interpretation: 
+In comparing the Manhattan plots and qq plots. The red lines display the locations for each QTN simulated. The blue lines show false positives, and the black lines show true positives. If there are red lines, in the results they are technically false negatives since the black lines would cover them if present.Since there was no cutoff specified, it defaults to a Bonferroni correction. We can easily see the large amounts of false positives in the GWASbyCor Manhattan plot, with only one appearing in the GWASapply Manhattan plot. The qqplots also show the GWASapply function results with less deviation from the expected except for the significant SNPS. Both ROC curves both look similar between the two functions. For the replicated results, we see that GWASbyCor results in a very large number of false positives with an averge of 31 and a large standard deviation of 48, whereas, our GWASapply function only results in an average of 4 false positives and a standard deviation of around 6. However, both functions result in a similar average for true positives. The t-tests show a significant difference for false positives but not true positives. The results show the GWASapply function results in a much lower rate of false positives.
+
+## Simulated Data
+```{r,warning=FALSE,message=FALSE}
+source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
+source("http://www.zzlab.net/StaGen/2020/R/GWASbyCor.R")
+NQTN = 10 #specify number of QTN
+h2 = 0.75 #heritability
+alpha = 0.6 #alpha value
+distribution = "normal" #specify distribution
+set.seed(1)
+#plotting
+#phenotype simulation
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+p=GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
+p=t(matrix(p))
+pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+p5=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position,message=TRUE)
+```
+
+### Manhattan Plots
+```{r,warning=FALSE,message=FALSE}
+gcm=manhattan_plot(GM,p,cutoff=NULL,mySim$QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "GWASbyCor",messages=FALSE)
+gtm=manhattan_plot(GM,p5$P.value.res,cutoff=NULL,mySim$QTN.position,FP=p5$False.Positive,TP=p5$True.Positive, trait = "GWASapply",messages=FALSE)
+grid.arrange(gcm, gtm, nrow = 2, ncol = 1, top = "Manhattan Plots")
+```
+
+### QQ Plots
+```{r,warning=FALSE,message=FALSE}
+gcq=qq_plot(GM,p,mySim$QTN.position, trait = "GWASbyCor")
+gtq=qq_plot(GM,p5$P.value.res,mySim$QTN.position, trait = "GWASapply")
+grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "QQ-Plots")
+```
+
+### ROC Curve Power vs FDR
+```{r}
+par(mfrow=c(1,2))
+plot(pres$power~pres$fdr,xlab="FDR",ylab="Power",main="ROC Curve: GWASbyCor",type="b")
+plot(p5$power.fdr.type1error.res$power~p5$power.fdr.type1error.res$fdr,xlab="FDR",ylab="Power",main="ROC Curve: GWASapply",type="b")
+```
+
+### ROC Curve Power vs Type 1
+```{r}
+par(mfrow=c(1,2))
+plot(pres$power~pres$type1error,xlab="Type 1",ylab="Power",main="ROC Curve: GWASbyCor",type="b")
+plot(p5$power.fdr.type1error.res$power~p5$power.fdr.type1error.res$type1error,xlab="Type 1",ylab="Power",main="ROC Curve: GWASapply",type="b")
+```
+
+### Mean True and False Positives
+#### GWASbyCor
+```{r,warning=FALSE,message=FALSE}
+gcrep=replicate (30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
+  p=data.frame(p)
+  pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+  FalP=length(pres$FP.fdr.power)
+  TruP=length(pres$TP.fdr.power)
+  num_output=c()
+  num_output=c(FalP,TruP)
+  })
+means=rowMeans(gcrep)
+stdevs=apply(gcrep,1,sd)
+out4 <- rbind(means,stdevs)
+out4 <- as.data.frame(out4)
+colnames(out4) <- c("False Positive","True Positives")
+rownames(out4)<-c("Averages","Standard Deviations")
+kable(out4) 
+```
+
+#### GWASapply
+```{r,warning=FALSE,message=FALSE}
+garep=replicate(30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+  p5_rep=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position)
+  FalP=length(p5_rep$False.Positive)
+  TruP=length(p5_rep$True.Positive)
+  num_output=c()
+  num_output=c(FalP,TruP)
+  })
+means=rowMeans(garep)
+stdevs=apply(garep,1,sd)
+out5 <- rbind(means,stdevs)
+out5 <- as.data.frame(out5)
+colnames(out5) <- c("False Positive","True Positives")
+rownames(out5) <-c("Averages","Standard Deviations")
+kable(out5) 
+```
+
+## Statistical Inference
+### False Positives
+```{r,warning=FALSE,message=FALSE}
+t.test(gcrep[1,],garep[1,], paired = T,  na.rm=T)
+```
+
+### True Positives
+```{r,warning=FALSE,message=FALSE}
+t.test(gcrep[2,],garep[2,], paired = T,  na.rm=T)
+```
+
+
+### **Problem 6 (25 Pts)**
+Demonstrate that your package is better than BLINK C version (http://zzlab.net/blink) on either statistical power or speed.
+
+```{r,warning=FALSE,message=FALSE}
+garapid=replicate(30,{
+loop_start <- proc.time()
+p6_rep=GWASapply_rapid(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+loop_end <- proc.time()
+loop_elapsed <- loop_end[3] - loop_start[3]
+timet=c(loop_elapsed[[1]])
+  })
+mean(garapid)
+```
+
+####BLINK Results
+```{r,warning=FALSE,message=FALSE}
+blink.p <- read.table("EarHT_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
+head(blink.p)
+manhattan_plot(GM,t(blink.p$p_value),cutoff=NULL, trait = "BLINK",messages=FALSE)
+```
+
+```{r,warning=FALSE,message=FALSE}
+qq_plot(GM,t(blink.p$p_value), trait = "GWASapply")
+```
+

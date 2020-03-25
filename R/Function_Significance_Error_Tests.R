@@ -2,6 +2,7 @@
 #'
 #' @param P list of SNPs order by ascending  p-value
 #' @param QTN.position position of QTN if known
+#' @param cutoff  If cutoff is default, uses Bonferroni;0.05/number of SNPs
 #' @return list of power, FDR, type-1 error, False Positives, and True Positives
 power.fdr <- function(P.value, QTN.position=NULL,cutoff=NULL) {
   pwr <- c()

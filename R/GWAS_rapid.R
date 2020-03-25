@@ -1,3 +1,12 @@
+#' Rapid GWAS with PCA
+#'
+#' @param pheno file with numeric phenotypic values
+#' @param geno data.frame with genotype calls coded as 0,1,2.
+#' @param Cov numeric data.frame with covariates values
+#' @param GM genetic map of data with chr and position of each SNP
+#' @param PCA.M number of principal components to use default is 3
+#' @param cutoff  If cutoff is default, uses Bonferroni; 0.05/number of SNPs
+#' @return GWAS P-values
 GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cutoff=NULL){
   GD=geno
   n=nrow(GD)
@@ -23,7 +32,6 @@ GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cut
       }else {X=cbind(1, PCA$x[,1:PCA.M],x)}
       }# END FOR DEPENDECE
       # SOLVE THE LINEAR REGRESSION MATRIX:
-      #  X=as.matrix(X)
       LHS=t(X)%*%X
       C=solve(LHS)
       RHS=t(X)%*%y
@@ -41,19 +49,6 @@ GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cut
   ) #end of appply function for markers
   P=t(matrix(P))
   P.value=P
-  order.SNP=order(P.value)
-  #If cutoff is default, uses Bonferroni; else uses -log(value)
-  cutoff.final=(ifelse(
-    is.null(cutoff),
-    0.05/m,
-    cutoff
-  ))
-  sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
-  lsnp=length(sig.SNP)
-  ###
-  zeros=P==0
-  P[zeros]=1e-20
-  P=data.frame(P)
-  GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP)
+  GWAS.Results=list(P.value.res=P.value)
   return(GWAS.Results)
 }
