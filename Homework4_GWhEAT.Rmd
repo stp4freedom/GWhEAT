@@ -322,7 +322,7 @@ kable(out7)
 out1=data.frame(out6,out7)
 ```
 
-### Comparing BLINk and GWASapply
+### Comparing BLINK and GWASapply
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 #output results
 kable(out1)
