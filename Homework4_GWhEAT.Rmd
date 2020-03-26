@@ -65,7 +65,7 @@ In our package we use the "prcomp" function to perform PCA on the X "geno" objec
 ### **Problem 3 (20 Pts)**
 Develop a user manual and tutorials. Name your package and create a logo.
 
-#### Please see User_Manual.Rmd and User_Manual.html forthe user manual and tutorials. 
+#### Please see User_Manual_Tutorial.Rmd and User_Manual_Tutorial.html for the user manual and tutorials. 
 Also included is a Reference_Manual.pdf for all our functions in the package which include "fix_Dep", "manhattan_plot", "qq_plot", "power.fdr", and our main functions "GWASapply", and "GWASapply_rapid".
 
 ### **Problem 4 (15 Pts)**
@@ -75,7 +75,7 @@ Perform GWAS on the data provided or your own data which must contain cofactors.
 Our GWASapply function accepts the tutorial data phenotypes, genotypes, CV, and Genetic Map. It displays the PCA variance table and plots and scatterplots along with a QQ-plot and manhattan plot. The messages displayed give information on certain aspects of our GWAS results. The results returned returned are the probability values, cutoff used, order of snps and a table with the significant SNP information.
 
 ### Results and Interpretation: 
-For the demo data, our function shows that since there was no cutoff specified, it defaults to a Bonferroni correction that results in a cutoff for significant values of "1.62e-05" with four significant SNPs. The results are shown below in the plots and the information is displayed in table 1. The MAF for each SNP is relative low ranging from 0.10 to 0.35.
+For the demo data, our function shows that since there was no cutoff specified, it defaults to a Bonferroni correction that results in a cutoff for significant values of "1.62e-05" with four significant SNPs. The results are shown below in the plots and the information is displayed in table 1. The MAF for each associated SNP ranged from 0.10 to 0.35. If these associated SNP’s MAF were very low like below 0.05 it would be cause of concern, however with the lowest MAF at 0.10 we can have confidence in these SNP associations.
 
 ### Perform GWAS and display results
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
