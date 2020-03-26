@@ -4,6 +4,14 @@ author: "Lance Merrick and Samuel Prather"
 date: "March 30, 2020"
 output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Professor: Zhiwu Zhang
+## **Due on March 30, 2020, Monday, 3:10PM, PST**
+
 We will need to install the GWhEAT package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the packaged “devtools” using the code below.
 ```{r,warning=FALSE,message=FALSE}
 #code to install package from github
@@ -70,18 +78,21 @@ Our GWASapply function accepts the tutorial data phenotypes, genotypes, CV, and 
 For the demo data, our function shows that since there was no cutoff specified, it defaults to a Bonferroni correction that results in a cutoff for significant values of "1.62e-05" with four significant SNPs. The results are shown below in the plots and the information is displayed in table 1. The MAF for each SNP is relative low ranging from 0.10 to 0.35.
 
 ### Perform GWAS and display results
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#run gwasapply function and display messages, PCA, and plots
 p4=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=TRUE,messages=TRUE,trait="Problem 4")
 ```
 
 ### GWAS Threshold
-```{r}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#final threshold
 p4$cutoff.final.res
 ```
 
 ### Significant SNPs and Minor Allele Frequency
 #### Table 1. Significant SNP Results.
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#significant snps table
 kable(p4$sig.table)
 ```
 
@@ -98,7 +109,7 @@ In order to accurately compare our GWAS function and "GWASbyCor", we will simula
 In comparing the Manhattan plots and qq plots. The red lines display the locations for each QTN simulated. The blue lines show false positives, and the black lines show true positives. If there are red lines, in the results they are technically false negatives since the black lines would cover them if present.Since there was no cutoff specified, it defaults to a Bonferroni correction. We can easily see the large amounts of false positives in the GWASbyCor Manhattan plot, with only one appearing in the GWASapply Manhattan plot. The qqplots also show the GWASapply function results with less deviation from the expected except for the significant SNPS. Both ROC curves both look similar between the two functions. For the replicated results, we see that GWASbyCor results in a very large number of false positives with an averge of 31 and a large standard deviation of 48, whereas, our GWASapply function only results in an average of 4 false positives and a standard deviation of around 6. However, both functions result in a similar average for true positives. The t-tests show a significant difference for false positives but not true positives. The results show the GWASapply function results in a much lower rate of false positives.
 
 ## Simulated Data
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
 source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
 source("http://www.zzlab.net/StaGen/2020/R/GWASbyCor.R")
 NQTN = 10 #specify number of QTN
@@ -111,113 +122,274 @@ set.seed(1)
 mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
 p=GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
 p=t(matrix(p))
+#power calculations
 pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+#gwasapply function
 p5=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position,message=TRUE)
 ```
 
 ### Manhattan Plots
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#create manhattan plots
 gcm=manhattan_plot(GM,p,cutoff=NULL,mySim$QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "GWASbyCor",messages=FALSE)
 gtm=manhattan_plot(GM,p5$P.value.res,cutoff=NULL,mySim$QTN.position,FP=p5$False.Positive,TP=p5$True.Positive, trait = "GWASapply",messages=FALSE)
 grid.arrange(gcm, gtm, nrow = 2, ncol = 1, top = "Manhattan Plots")
 ```
 
 ### QQ Plots
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#create qq plots
 gcq=qq_plot(GM,p,mySim$QTN.position, trait = "GWASbyCor")
 gtq=qq_plot(GM,p5$P.value.res,mySim$QTN.position, trait = "GWASapply")
 grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "QQ-Plots")
 ```
 
 ### ROC Curve Power vs FDR
-```{r}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#plot power vs fdr for both functions
 par(mfrow=c(1,2))
 plot(pres$power~pres$fdr,xlab="FDR",ylab="Power",main="ROC Curve: GWASbyCor",type="b")
 plot(p5$power.fdr.type1error.res$power~p5$power.fdr.type1error.res$fdr,xlab="FDR",ylab="Power",main="ROC Curve: GWASapply",type="b")
 ```
 
 ### ROC Curve Power vs Type 1
-```{r}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#plot power vs type1 for both functions
 par(mfrow=c(1,2))
 plot(pres$power~pres$type1error,xlab="Type 1",ylab="Power",main="ROC Curve: GWASbyCor",type="b")
 plot(p5$power.fdr.type1error.res$power~p5$power.fdr.type1error.res$type1error,xlab="Type 1",ylab="Power",main="ROC Curve: GWASapply",type="b")
 ```
 
-### Mean True and False Positives
+### Mean Power, FDR, and True and False Positives
 #### GWASbyCor
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
 gcrep=replicate (30,{
+  #simulate phenotype
   mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
   p= GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
   p=data.frame(p)
+  #power calculations
   pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+  p5_pwr=mean(pres$power)
+  p5_fdr=mean(pres$fdr)
   FalP=length(pres$FP.fdr.power)
   TruP=length(pres$TP.fdr.power)
   num_output=c()
-  num_output=c(FalP,TruP)
+  num_output=c(p5_pwr,p5_fdr,FalP,TruP)
   })
 means=rowMeans(gcrep)
 stdevs=apply(gcrep,1,sd)
 out4 <- rbind(means,stdevs)
 out4 <- as.data.frame(out4)
-colnames(out4) <- c("False Positive","True Positives")
+colnames(out4) <-  c("Power","FDR","False Positive","True Positives")
 rownames(out4)<-c("Averages","Standard Deviations")
 kable(out4) 
 ```
 
 #### GWASapply
-```{r,warning=FALSE,message=FALSE}
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
 garep=replicate(30,{
+  #simulate phenotype
   mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+  #run gwasapply function
   p5_rep=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position)
+  p5_pwr=mean(p5$power.fdr.type1error.res$power)
+  p5_fdr=mean(p5$power.fdr.type1error.res$fdr)
   FalP=length(p5_rep$False.Positive)
   TruP=length(p5_rep$True.Positive)
   num_output=c()
-  num_output=c(FalP,TruP)
+  num_output=c(p5_pwr,p5_fdr,FalP,TruP)
   })
 means=rowMeans(garep)
 stdevs=apply(garep,1,sd)
 out5 <- rbind(means,stdevs)
 out5 <- as.data.frame(out5)
-colnames(out5) <- c("False Positive","True Positives")
+colnames(out5) <- c("Power","FDR","False Positive","True Positives")
 rownames(out5) <-c("Averages","Standard Deviations")
+#output results in a table
 kable(out5) 
 ```
 
 ## Statistical Inference
-### False Positives
-```{r,warning=FALSE,message=FALSE}
+### Power
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for power
 t.test(gcrep[1,],garep[1,], paired = T,  na.rm=T)
 ```
 
-### True Positives
-```{r,warning=FALSE,message=FALSE}
+### FDR
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for FDR
 t.test(gcrep[2,],garep[2,], paired = T,  na.rm=T)
 ```
 
+### False Positives
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for false positive
+t.test(gcrep[3,],garep[3,], paired = T,  na.rm=T)
+```
+
+### True Positives
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for true positives
+t.test(gcrep[4,],garep[4,], paired = T,  na.rm=T)
+```
 
 ### **Problem 6 (25 Pts)**
 Demonstrate that your package is better than BLINK C version (http://zzlab.net/blink) on either statistical power or speed.
 
-```{r,warning=FALSE,message=FALSE}
+### Methods: 
+In order to accurately compare our GWAS function and Blink, we will simulate data and use 10 QTNs in order to calculate power, FDR, false positives and true positives, and most importantly compare the speed of our functions. We will use Manhattan plots and QQ plots to compare our results with the QTNs, false positives, and true positives denoted on the Manhattan plot. Using the replicate function, We replicated the GWAS functions, and then calculated how many false positives and true positives were calculated. We then took the averages and standard deviations of all the replicates. Then we use a t-test for both results in order to use statisitcal inferences and show a significant difference between the two methods.We did the same thing for Power and FDR.
+
+### Results and Interpretation: 
+In comparing the Manhattan plots and qq plots. The red lines display the locations for each QTN simulated. The blue lines show false positives, and the black lines show true positives. If there are red lines, in the results they are technically false negatives since the black lines would cover them if present.Since there was no cutoff specified, it defaults to a Bonferroni correction. Both functions display very few if any false positives, with BLINK producing more TRUE positives. This is confirmed by the replicates and averages for the two functions. The one thing that GWASapply has on BLINK is speed. The average speed is lower and is also significant in the t-test.
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+NQTN = 10 #specify number of QTN
+h2 = 0.75 #heritability
+alpha = 0.6 #alpha value
+distribution = "normal" #specify distribution
+set.seed(1)
+#plotting
+#phenotype simulation
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#run replicate
 garapid=replicate(30,{
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+#start time for function
 loop_start <- proc.time()
-p6_rep=GWASapply_rapid(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+p6_rep=GWASapply_rapid(mySim$y,genotypes,CV,GM,PCA.M = 3)
 loop_end <- proc.time()
+#end time for function
 loop_elapsed <- loop_end[3] - loop_start[3]
-timet=c(loop_elapsed[[1]])
+#power calculations
+p6_power=power.fdr(p6_rep$P.value.res,mySim$QTN.position)
+p6_pwr=mean(p6_power$power)
+p6_fdr=mean(p6_power$fdr)
+FalP=length(p6_power$FP.fdr.power)
+TruP=length(p6_power$TP.fdr.power)
+pwr.fdr=c(p6_pwr,p6_fdr,loop_elapsed,FalP,TruP)
+#timet=c(loop_elapsed[[1]])
   })
-mean(garapid)
+means=rowMeans(garapid)
+out6 <- rbind(means[1],means[2],means[3],means[4],means[5])
+out6 <- as.data.frame(out6)
+colnames(out6) <- c("GWASapply Average")
+rownames(out6) <-c("Power","FDR","Seconds","False Positive","True Postive")
 ```
 
-####BLINK Results
-```{r,warning=FALSE,message=FALSE}
-blink.p <- read.table("EarHT_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
-head(blink.p)
-manhattan_plot(GM,t(blink.p$p_value),cutoff=NULL, trait = "BLINK",messages=FALSE)
+```{r,echo=FALSE,results="hide",warning=FALSE,message=FALSE}
+#write map and numeric genotype files compatible with BLINK
+myGM=GM
+colnames(myGM)=c("rs","chr","pos")
+write.table(t(genotypes),file="myData.dat",quote=F,sep="\t",col.name=F,row.name=F)
+write.table(myGM,file="myData.map",quote=F,sep="\t",col.name=T,row.name=F)
+colnames(CV)=c("taxa","CV1","CV2")
+write.table(CV,file="myData.cov",quote=F,sep="\t",col.name=T,row.name=F)
+#run replicate
+blinkrep=replicate(30,{
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+myY=cbind(rownames(mySim$y),mySim$y)
+colnames(myY)=c("taxa","Sim")
+write.table(myY,file="myData.txt",quote=F,sep="\t",col.name=T,row.name=F)
+#start time for function
+loop_start <- proc.time()
+system("blink --file myData --numeric --gwas")
+loop_end <- proc.time()
+#end time for function
+loop_elapsed <- loop_end[3] - loop_start[3]
+#read in results
+blink.p <- read.table("Sim_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
+p=t(blink.p$p_value)
+#power calculations
+p6_blink=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+p6_pwr_blink=mean(p6_blink$power)
+p6_fdr_blink=mean(p6_blink$fdr)
+FalP=length(p6_blink$FP.fdr.power)
+TruP=length(p6_blink$TP.fdr.power)
+pwr.fdr=c(p6_pwr_blink,p6_fdr_blink,loop_elapsed,FalP,TruP)
+  })
+means=rowMeans(blinkrep)
+out7 <- rbind(means[1],means[2],means[3],means[4],means[5])
+out7 <- as.data.frame(out7)
+colnames(out7) <- c("Blink Average")
+rownames(out7) <-c("Power","FDR","Seconds","False Positive","True Postive")
+kable(out7) 
+out1=data.frame(out6,out7)
 ```
 
-```{r,warning=FALSE,message=FALSE}
-qq_plot(GM,t(blink.p$p_value), trait = "GWASapply")
+### Comparing BLINk and GWASapply
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#output results
+kable(out1)
 ```
 
+
+#### Power
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for power
+t.test(garapid[1,],blinkrep[1,], paired = T,  na.rm=T)
+```
+
+#### FDR
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for FDR
+t.test(garapid[2,],blinkrep[2,], paired = T,  na.rm=T)
+```
+
+#### Time
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for time
+t.test(garapid[3,],blinkrep[3,], paired = T,  na.rm=T)
+```
+
+#### False Positives
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for false positve
+t.test(garapid[4,],blinkrep[4,], paired = T,  na.rm=T)
+```
+
+#### True Positives
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for true positive
+t.test(garapid[5,],blinkrep[5,], paired = T,  na.rm=T)
+```
+
+#### Manhattan Plots
+```{r,echo=FALSE,results="hide",warning=FALSE,message=FALSE}
+#simulate phenotypes
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+myY=cbind(rownames(mySim$y),mySim$y)
+colnames(myY)=c("taxa","Sim")
+#write phenotype table compatabile with BLINK
+write.table(myY,file="myData.txt",quote=F,sep="\t",col.name=T,row.name=F)
+#run BLINK numeric GWAS
+system("blink --file myData --numeric --gwas")
+blink.p <- read.table("Sim_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
+p=t(blink.p$p_value)
+pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+
+#Run GWASapply and power.fdr functions
+p6_p=GWASapply_rapid(mySim$y,genotypes,CV,GM,PCA.M = 3)
+p6_plots=power.fdr(p6_p$P.value.res,mySim$QTN.position)
+```
+
+#### Manhattan Plots
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#plot manhattan plots together
+gcm=manhattan_plot(GM,p,cutoff=NULL,mySim$QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "BLINK",messages=FALSE)
+gtm=manhattan_plot(GM,p6_p$P.value.res,cutoff=NULL,mySim$QTN.position,FP=p6_plots$FP.fdr.power,TP=p6_plots$TP.fdr.power, trait = "GWASapply",messages=FALSE)
+grid.arrange(gcm, gtm, nrow = 2, ncol = 1, top = "Manhattan Plots")
+```
+
+#### QQ Plots
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#plot qq plots together
+gcq=qq_plot(GM,p,mySim$QTN.position, trait = "BLINK")
+gtq=qq_plot(GM,p6_p$P.value.res,mySim$QTN.position, trait = "GWASapply")
+grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "QQ-Plots")
+```
