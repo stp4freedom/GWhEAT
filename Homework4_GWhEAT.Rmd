@@ -321,7 +321,7 @@ rownames(out7) <-c("Power","FDR","Seconds","False Positive","True Postive")
 out1=data.frame(out6,out7)
 ```
 
-### Comparing BLINK and GWASapply
+### Comparing BLINk and GWASapply
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 #output results
 kable(out1)
@@ -397,7 +397,7 @@ grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "QQ-Plots")
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 gt_scan1 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric1.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
 classes1 <- sapply(gt_scan1, class)
-genotypes1 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric1.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+genotypes1 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric1.txt", header = T, row.names = 1, colClasses = classes1, stringsAsFactors = F, sep = "\t"))
 #import genetic map, phenotypes, and covariates
 GM1 <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information1.txt", header = T, stringsAsFactors = F, sep = "\t")
 ```
@@ -486,7 +486,7 @@ t.test(garapid1[3,],blinkrep1[3,], paired = T,  na.rm=T)
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 gt_scan2 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric2.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
 classes2 <- sapply(gt_scan2, class)
-genotypes2 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric2.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+genotypes2 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric2.txt", header = T, row.names = 1, colClasses = classes2, stringsAsFactors = F, sep = "\t"))
 #import genetic map, phenotypes, and covariates
 GM2 <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information2.txt", header = T, stringsAsFactors = F, sep = "\t")
 ```
