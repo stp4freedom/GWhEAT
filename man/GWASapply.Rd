@@ -32,7 +32,7 @@ GWASapply(
 
 \item{QTN.position}{posistion of QTN if applicable}
 
-\item{cutoff}{If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs}
+\item{cutoff}{If cutoff is default, uses Bonferroni;0.05/number of SNPs}
 
 \item{plots}{if TRUE, function plots PCA graphs, Manhatten Plot and QQ plot}
 
@@ -41,6 +41,8 @@ GWASapply(
 \item{print}{if TRUE, results are saved in a CSV}
 
 \item{trait}{character value for trait name}
+
+\item{rapid}{this option skips all side options and returns just GWAS results}
 }
 \value{
 Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP and results in a CSV

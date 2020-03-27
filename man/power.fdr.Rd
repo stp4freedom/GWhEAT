@@ -9,6 +9,8 @@ power.fdr(P.value, QTN.position = NULL, cutoff = NULL)
 \arguments{
 \item{QTN.position}{position of QTN if known}
 
+\item{cutoff}{If cutoff is default, uses Bonferroni;0.05/number of SNPs}
+
 \item{P}{list of SNPs order by ascending  p-value}
 }
 \value{

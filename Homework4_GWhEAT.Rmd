@@ -321,7 +321,7 @@ rownames(out7) <-c("Power","FDR","Seconds","False Positive","True Postive")
 out1=data.frame(out6,out7)
 ```
 
-### Comparing BLINk and GWASapply
+### Comparing BLINK and GWASapply
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 #output results
 kable(out1)

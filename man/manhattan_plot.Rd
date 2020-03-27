@@ -20,15 +20,17 @@ manhattan_plot(
 
 \item{pvals}{pvals from gwas results for each SNP}
 
-\item{cutoff}{If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs}
+\item{cutoff}{If cutoff is default, uses Bonferroni; 0.05/number of SNPs}
 
 \item{QTN_index}{posistion of QTN if applicable}
 
-\item{FP}{Positions of SNPS that are False positive}
+\item{FP}{Positions of SNPS that are False positives}
 
-\item{TP}{Positions of SNPS that are True positive}
+\item{TP}{Positions of SNPS that are True positives}
 
 \item{trait}{character value for trait name}
+
+\item{messages}{if TRUE, returns messages for the GWAS function}
 }
 \value{
 Manhatten plot
