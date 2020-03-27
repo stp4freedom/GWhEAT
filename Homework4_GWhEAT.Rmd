@@ -239,10 +239,10 @@ t.test(gcrep[4,],garep[4,], paired = T,  na.rm=T)
 Demonstrate that your package is better than BLINK C version (http://zzlab.net/blink) on either statistical power or speed.
 
 ### Methods: 
-In order to accurately compare our GWAS function and Blink, we will simulate data and use 10 QTNs in order to calculate power, FDR, false positives and true positives, and most importantly compare the speed of our functions. We will use Manhattan plots and QQ plots to compare our results with the QTNs, false positives, and true positives denoted on the Manhattan plot. Using the replicate function, We replicated the GWAS functions, and then calculated how many false positives and true positives were calculated. We then took the averages and standard deviations of all the replicates. Then we use a t-test for both results in order to use statisitcal inferences and show a significant difference between the two methods.We did the same thing for Power and FDR.
+In order to accurately compare our GWAS function and Blink, we will simulate data and use 10 QTNs in order to calculate power, FDR, false positives and true positives, and most importantly compare the speed of our functions. We will use Manhattan plots and QQ plots to compare our results with the QTNs, false positives, and true positives denoted on the Manhattan plot. Using the replicate function, We replicated the GWAS functions, and then calculated how many false positives and true positives were calculated. We then took the averages and standard deviations of all the replicates. Then we use a t-test for both results in order to use statisitcal inferences and show a significant difference between the two methods.We did the same thing for Power and FDR. We then tested the replicated functions on two more datasets.
 
 ### Results and Interpretation: 
-In comparing the Manhattan plots and qq plots. The red lines display the locations for each QTN simulated. The blue lines show false positives, and the black lines show true positives. If there are red lines, in the results they are technically false negatives since the black lines would cover them if present.Since there was no cutoff specified, it defaults to a Bonferroni correction. Both functions display very few if any false positives, with BLINK producing more TRUE positives. This is confirmed by the replicates and averages for the two functions. The one thing that GWASapply has on BLINK is speed. The average speed is lower and is also significant in the t-test.
+In comparing the Manhattan plots and qq plots. The red lines display the locations for each QTN simulated. The blue lines show false positives, and the black lines show true positives. If there are red lines, in the results they are technically false negatives since the black lines would cover them if present.Since there was no cutoff specified, it defaults to a Bonferroni correction. Both functions display very few if any false positives, with BLINK producing more TRUE positives. This is confirmed by the replicates and averages for the two functions. The one thing that GWASapply has on BLINK is speed. The average speed is lower and is also significant in the t-test. This proved true for all three datasets.
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 NQTN = 10 #specify number of QTN
@@ -262,7 +262,7 @@ garapid=replicate(30,{
 mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
 #start time for function
 loop_start <- proc.time()
-p6_rep=GWASapply_rapid(mySim$y,genotypes,CV,GM,PCA.M = 3)
+p6_rep=GWASapply_rapid(mySim$y,genotypes,CV,PCA.M = 3)
 loop_end <- proc.time()
 #end time for function
 loop_elapsed <- loop_end[3] - loop_start[3]
@@ -318,7 +318,6 @@ out7 <- rbind(means[1],means[2],means[3],means[4],means[5])
 out7 <- as.data.frame(out7)
 colnames(out7) <- c("Blink Average")
 rownames(out7) <-c("Power","FDR","Seconds","False Positive","True Postive")
-kable(out7) 
 out1=data.frame(out6,out7)
 ```
 
@@ -374,7 +373,7 @@ p=t(blink.p$p_value)
 pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
 
 #Run GWASapply and power.fdr functions
-p6_p=GWASapply_rapid(mySim$y,genotypes,CV,GM,PCA.M = 3)
+p6_p=GWASapply_rapid(mySim$y,genotypes,CV,PCA.M = 3)
 p6_plots=power.fdr(p6_p$P.value.res,mySim$QTN.position)
 ```
 
@@ -392,4 +391,181 @@ grid.arrange(gcm, gtm, nrow = 2, ncol = 1, top = "Manhattan Plots")
 gcq=qq_plot(GM,p,mySim$QTN.position, trait = "BLINK")
 gtq=qq_plot(GM,p6_p$P.value.res,mySim$QTN.position, trait = "GWASapply")
 grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "QQ-Plots")
+```
+
+### Second Dataset
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+gt_scan1 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric1.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes1 <- sapply(gt_scan1, class)
+genotypes1 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric1.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+#import genetic map, phenotypes, and covariates
+GM1 <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information1.txt", header = T, stringsAsFactors = F, sep = "\t")
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#run replicate
+garapid1=replicate(30,{
+mySim=G2P(genotypes1, h2, alpha, NQTN, distribution)
+#start time for function
+loop_start <- proc.time()
+p6_rep=GWASapply_rapid(mySim$y,genotypes1,CV,PCA.M = 3)
+loop_end <- proc.time()
+#end time for function
+loop_elapsed <- loop_end[3] - loop_start[3]
+#power calculations
+p6_power=power.fdr(p6_rep$P.value.res,mySim$QTN.position)
+p6_pwr=mean(p6_power$power)
+p6_fdr=mean(p6_power$fdr)
+FalP=length(p6_power$FP.fdr.power)
+TruP=length(p6_power$TP.fdr.power)
+pwr.fdr=c(p6_pwr,p6_fdr,loop_elapsed,FalP,TruP)
+#timet=c(loop_elapsed[[1]])
+  })
+means1=rowMeans(garapid1)
+out8 <- rbind(means1[1],means1[2],means1[3],means1[4],means1[5])
+out8 <- as.data.frame(out8)
+colnames(out8) <- c("GWASapply Average")
+rownames(out8) <-c("Power","FDR","Seconds","False Positive","True Postive")
+```
+
+```{r,echo=FALSE,results="hide",warning=FALSE,message=FALSE}
+#write map and numeric genotype files compatible with BLINK
+myGM1=GM1
+colnames(myGM1)=c("rs","chr","pos")
+write.table(t(genotypes1),file="myData1.dat",quote=F,sep="\t",col.name=F,row.name=F)
+write.table(myGM1,file="myData1.map",quote=F,sep="\t",col.name=T,row.name=F)
+colnames(CV)=c("taxa","CV1","CV2")
+write.table(CV,file="myData1.cov",quote=F,sep="\t",col.name=T,row.name=F)
+#run replicate
+blinkrep1=replicate(30,{
+mySim=G2P(genotypes1, h2, alpha, NQTN, distribution)
+myY=cbind(rownames(mySim$y),mySim$y)
+colnames(myY)=c("taxa","Sim")
+write.table(myY,file="myData1.txt",quote=F,sep="\t",col.name=T,row.name=F)
+#start time for function
+loop_start <- proc.time()
+system("blink --file myData1 --numeric --gwas")
+loop_end <- proc.time()
+#end time for function
+loop_elapsed <- loop_end[3] - loop_start[3]
+#read in results
+blink.p <- read.table("Sim_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
+p=t(blink.p$p_value)
+#power calculations
+p6_blink=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+p6_pwr_blink=mean(p6_blink$power)
+p6_fdr_blink=mean(p6_blink$fdr)
+FalP=length(p6_blink$FP.fdr.power)
+TruP=length(p6_blink$TP.fdr.power)
+pwr.fdr=c(p6_pwr_blink,p6_fdr_blink,loop_elapsed,FalP,TruP)
+  })
+means1=rowMeans(blinkrep1)
+out9 <- rbind(means1[1],means1[2],means1[3],means1[4],means1[5])
+out9 <- as.data.frame(out9)
+colnames(out9) <- c("Blink Average")
+rownames(out9) <-c("Power","FDR","Seconds","False Positive","True Postive")
+out2=data.frame(out8,out9)
+```
+
+
+### Comparing BLINk and GWASapply Dataset 2
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#output results
+kable(out2)
+```
+
+#### Time
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for time
+t.test(garapid1[3,],blinkrep1[3,], paired = T,  na.rm=T)
+```
+
+## Third Dataset
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+gt_scan2 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric2.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes2 <- sapply(gt_scan2, class)
+genotypes2 <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric2.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+#import genetic map, phenotypes, and covariates
+GM2 <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information2.txt", header = T, stringsAsFactors = F, sep = "\t")
+```
+
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#run replicate
+garapid2=replicate(30,{
+mySim=G2P(genotypes2, h2, alpha, NQTN, distribution)
+#start time for function
+loop_start <- proc.time()
+p6_rep=GWASapply_rapid(mySim$y,genotypes2,CV,PCA.M = 3)
+loop_end <- proc.time()
+#end time for function
+loop_elapsed <- loop_end[3] - loop_start[3]
+#power calculations
+p6_power=power.fdr(p6_rep$P.value.res,mySim$QTN.position)
+p6_pwr=mean(p6_power$power)
+p6_fdr=mean(p6_power$fdr)
+FalP=length(p6_power$FP.fdr.power)
+TruP=length(p6_power$TP.fdr.power)
+pwr.fdr=c(p6_pwr,p6_fdr,loop_elapsed,FalP,TruP)
+#timet=c(loop_elapsed[[1]])
+  })
+means2=rowMeans(garapid2)
+out10 <- rbind(means2[1],means2[2],means2[3],means2[4],means2[5])
+out10 <- as.data.frame(out10)
+colnames(out10) <- c("GWASapply Average")
+rownames(out10) <-c("Power","FDR","Seconds","False Positive","True Postive")
+```
+
+```{r,echo=FALSE,results="hide",warning=FALSE,message=FALSE}
+#write map and numeric genotype files compatible with BLINK
+myGM2=GM2
+colnames(myGM2)=c("rs","chr","pos")
+write.table(t(genotypes2),file="myData2.dat",quote=F,sep="\t",col.name=F,row.name=F)
+write.table(myGM2,file="myData2.map",quote=F,sep="\t",col.name=T,row.name=F)
+colnames(CV)=c("taxa","CV1","CV2")
+write.table(CV,file="myData2.cov",quote=F,sep="\t",col.name=T,row.name=F)
+#run replicate
+blinkrep2=replicate(30,{
+mySim=G2P(genotypes2, h2, alpha, NQTN, distribution)
+myY=cbind(rownames(mySim$y),mySim$y)
+colnames(myY)=c("taxa","Sim")
+write.table(myY,file="myData2.txt",quote=F,sep="\t",col.name=T,row.name=F)
+#start time for function
+loop_start <- proc.time()
+system("blink --file myData2 --numeric --gwas")
+loop_end <- proc.time()
+#end time for function
+loop_elapsed <- loop_end[3] - loop_start[3]
+#read in results
+blink.p <- read.table("Sim_GWAS_result.txt", header = T, stringsAsFactors = F, sep = "\t")
+p=t(blink.p$p_value)
+#power calculations
+p6_blink=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+p6_pwr_blink=mean(p6_blink$power)
+p6_fdr_blink=mean(p6_blink$fdr)
+FalP=length(p6_blink$FP.fdr.power)
+TruP=length(p6_blink$TP.fdr.power)
+pwr.fdr=c(p6_pwr_blink,p6_fdr_blink,loop_elapsed,FalP,TruP)
+  })
+means2=rowMeans(blinkrep2)
+out11 <- rbind(means2[1],means2[2],means2[3],means2[4],means2[5])
+out11 <- as.data.frame(out11)
+colnames(out11) <- c("Blink Average")
+rownames(out11) <-c("Power","FDR","Seconds","False Positive","True Postive")
+out3=data.frame(out10,out11)
+```
+
+### Comparing BLINk and GWASapply Dataset 3
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#output results
+kable(out3)
+```
+
+#### Time
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#t-test for time
+t.test(garapid2[3,],blinkrep2[3,], paired = T,  na.rm=T)
 ```

@@ -3,11 +3,10 @@
 #' @param pheno file with numeric phenotypic values
 #' @param geno data.frame with genotype calls coded as 0,1,2.
 #' @param Cov numeric data.frame with covariates values
-#' @param GM genetic map of data with chr and position of each SNP
 #' @param PCA.M number of principal components to use default is 3
 #' @param cutoff  If cutoff is default, uses Bonferroni; 0.05/number of SNPs
 #' @return GWAS P-values
-GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cutoff=NULL){
+GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, PCA.M=3,cutoff=NULL){
   GD=geno
   n=nrow(GD)
   m=ncol(GD)
@@ -26,7 +25,7 @@ GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cut
       # IF THERE IS CV INPUT
       }else{fD <- fix_Dep(PCA$x[,1:PCA.M], as.matrix(CV))
       # WITH CV INPUT, CONDITION 1: NO DEPENDENCE
-      if (is.null(fD)){X=cbind(1, PCA$x[,1:PCA.M],CV, x)
+      if (is.null(fD)){X=cbind(1, PCA$x[,1:PCA.M],as.matrix(CV), x)
 
       # WITH CV INPUT, CONDITION 2: WITH DEPENDENCE
       }else {X=cbind(1, PCA$x[,1:PCA.M],x)}
