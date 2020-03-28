@@ -8,7 +8,6 @@ GWASapply_rapid(
   pheno = NULL,
   geno = NULL,
   Cov = NULL,
-  GM = NULL,
   PCA.M = 3,
   cutoff = NULL
 )
@@ -19,8 +18,6 @@ GWASapply_rapid(
 \item{geno}{data.frame with genotype calls coded as 0,1,2.}
 
 \item{Cov}{numeric data.frame with covariates values}
-
-\item{GM}{genetic map of data with chr and position of each SNP}
 
 \item{PCA.M}{number of principal components to use default is 3}
 

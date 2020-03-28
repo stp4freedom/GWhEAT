@@ -22,7 +22,7 @@ library(devtools)
 Next the code below downloads and installs the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
 ```{r,warning=FALSE,message=FALSE}
 #install package
-#install_github("stp4freedom/GWhEAT", force =TRUE)
+install_github("stp4freedom/GWhEAT", force =TRUE)
 library(GWhEAT)#package name
 #Load dependencies 
 if (!require("pacman")) install.packages("pacman")

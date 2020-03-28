@@ -158,7 +158,7 @@ Example2=GWASapply(pheno=mySim$y, geno=genotypes, GM=GM, PCA.M=3,QTN.position=my
 ###  **Rapid run**
 As sequencing data becomes more accessible and data sets become larger a necessity of GWAS packages is computational speed. In light of this we created a function within GWhEAT that runs the GWAS in a rapid manor called “GWASapply_rapid”. “GWASapply_rappid” works the same as GWASapply but will not print the Manhattan or other plots and is able to run more quickly.    
 ```{r,warning=FALSE}
-Example3=GWASapply_rapid(pheno=phenotypes_n_1, geno=genotypes, Cov=CV, GM=GM, PCA.M = 3,cutoff=NULL)
+Example3=GWASapply_rapid(pheno=phenotypes_n_1, geno=genotypes, Cov=CV, PCA.M = 3,cutoff=NULL)
 ```
 
 ###  **Rapid run options**
