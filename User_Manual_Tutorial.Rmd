@@ -85,7 +85,7 @@ library(devtools)
 Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
 ```{r,warning=FALSE}
 #install package
-install_github("stp4freedom/GWhEAT", force =TRUE)
+install_github("stp4freedom/GWhEAT")
 library(GWhEAT)#package name
 #Load dependencies 
 if (!require("pacman")) install.packages("pacman")
@@ -176,19 +176,21 @@ qq_plot(GM,Example3$P.value.res,QTN.position, trait = "qq_plot_Example3")
 \
 \
 2. How to download GWhEAT? Please refer the “Getting started” section above where I show how to download and install GWhEAT using devtools.
-What SNP format does GWhEAT take? Currently GWhEAT only accepts SNP data in numerical form.
 \
 \
-3. What are the required inputs to run GWhEAT? You will need SNP data in numerical form, phenotypic data and a genetic map that has SNP name, Chromosome and position on chromosome. Without all three components GWhEAT will not be able to run successfully.
+3. What SNP format does GWhEAT take? Currently GWhEAT only accepts SNP data in numerical form.
 \
 \
-4. How is GWASapply_rapid different than GWASapply? Both GWASapply and GWASapply_rapid run the calculations the same way. The only difference is GWAsapply_rapid will not give you any of the output automatically, which makes it run faster and allows the user the develop their own output.
+4. What are the required inputs to run GWhEAT? You will need SNP data in numerical form, phenotypic data and a genetic map that has SNP name, Chromosome and position on chromosome. Without all three components GWhEAT will not be able to run successfully.
 \
 \
-5. Where can I get help with issues regarding GWhEAT? All questions should be directed to Samuel Prather at stp4freedom@gmail.com.
+5. How is GWASapply_rapid different than GWASapply? Both GWASapply and GWASapply_rapid run the calculations the same way. The only difference is GWAsapply_rapid will not give you any of the output automatically, which makes it run faster and allows the user the develop their own output.
 \
 \
-6. Are there other R packages that can perform GWAS? Yes, I would strongly recommend you check out the packaged GAPIT http://www.zzlab.net/GAPIT/ as it has a much wider range of options and functions.
+6. Where can I get help with issues regarding GWhEAT? All questions should be directed to Samuel Prather at stp4freedom@gmail.com.
+\
+\
+7. Are there other R packages that can perform GWAS? Yes, I would strongly recommend you check out the packaged GAPIT http://www.zzlab.net/GAPIT/ as it has a much wider range of options and functions.
 
 
 
